@@ -1,12 +1,5 @@
-#lstm inference
 import numpy as np
-from datetime import datetime
-import os
-from UnityAdaptor import transfer_obs
-import threading
-import sys
 from rclpy.node import Node
-import rclpy
 from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 import torch
@@ -17,7 +10,7 @@ from entity.State import State
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class supervised_node(Node):
+class supervised_inference_node(Node):
     def __init__(self):
         super().__init__("ROS2_Node")
         self.get_logger().info("supervised learning inference")#ros2Ai #unity2Ros
@@ -91,28 +84,27 @@ class supervised_node(Node):
         self.unity_data_collect(msg.data)
 
 
-def spin_pros(node):
-    exe = rclpy.executors.SingleThreadedExecutor()
-    exe.add_node(node)
-    exe.spin()
-    rclpy.shutdown()
-    sys.exit(0)
+# def spin_pros(node):
+#     exe = rclpy.executors.SingleThreadedExecutor()
+#     exe.add_node(node)
+#     exe.spin()
+#     rclpy.shutdown()
+#     sys.exit(0)
 
-def print_usage():
-    print("modes:")
-    print(" 1 -- supervised learning inference.")
-    print(" 2 -- rule-based control.")
-    print(" 3 -- reinforced learning inference.")
+# def print_usage():
+#     print("modes:")
+#     print(" 0 -- supervised learning data colletion.")
+#     print(" 1 -- supervised learning inference.")
+#     print(" 2 -- rule-based control.")
+#     print(" 3 -- reinforced learning inference.")
 
-def main(mode):
-    if mode == "1":
-        rclpy.init()
-        node = supervised_node()
-        # pros = threading.Thread(target=spin_pros, args=(node,))
-        spin_pros(node)
-        # pros.start()  
+# def main(mode):
+#     if mode == "1":
+#         rclpy.init()
+#         node = supervised_inference_node()
+#         spin_pros(node) 
 
-if __name__ == '__main__':
-    print_usage()
-    mode = input("Enter mode: ")
-    main(mode)
+# if __name__ == '__main__':
+#     print_usage()
+#     mode = input("Enter mode: ")
+#     main(mode)

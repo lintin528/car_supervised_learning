@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-
 from entity.ROS2Point import ROS2Point 
 from entity.WheelOrientation import WheelOrientation
 from entity.WheelAngularVel import WheelAngularVel

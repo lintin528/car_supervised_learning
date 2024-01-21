@@ -2,18 +2,15 @@ import numpy as np
 from datetime import datetime
 import os
 from entity.State import State
-import threading
-import sys
 from rclpy.node import Node
-import rclpy
 from std_msgs.msg import String
 import csv
-from datetime import datetime
 
-class Supervised_collect_data(Node):
+
+class supervised_collect_data_node(Node):
     def __init__(self):
-        super().__init__("aiNode")
-        self.get_logger().info("Ai start")#ros2Ai #unity2Ros
+        super().__init__("Supervised_data_collection_node")
+        self.get_logger().info("Node start")#ros2Ai #unity2Ros
         self.state = State()
         self.subscriber_fromUnity_thu_ROSbridge_ = self.create_subscription(
             String, 
@@ -21,15 +18,13 @@ class Supervised_collect_data(Node):
             self.callback_from_Unity, 
             10
         )
-
         self.subscriber_fromUnity_thu_ROSbridge_stopFlag = self.create_subscription(
             String, 
             "Unity_2_AI_stop_flag", 
             self.callback_from_Unity_stop_flag, 
             10
         )
-        self.tokens = list()
-            
+        self.tokens = list() 
 
     def callback_from_Unity(self, msg):
         Unitystate = msg.data
@@ -41,7 +36,7 @@ class Supervised_collect_data(Node):
             print("Unity lidar no signal.....")
 
     def callback_from_Unity_stop_flag(self, msg):
-        print("do callback")
+        print("saving data....")
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         csv_directory = os.path.join('.', 'output')
         csv_file_path = os.path.join(csv_directory, f'lstm_training_{timestamp}.csv')
@@ -54,21 +49,20 @@ class Supervised_collect_data(Node):
             for item in self.tokens:
                 csv_writer.writerow([item])
         self.tokens = list()
-        self.get_logger().info("Generate data")        
+        print("finish saving !")        
 
-def spin_pros(node):
-    exe = rclpy.executors.SingleThreadedExecutor()
-    exe.add_node(node)
-    exe.spin()
-    rclpy.shutdown()
-    sys.exit(0)
+# def spin_pros(node):
+#     exe = rclpy.executors.SingleThreadedExecutor()
+#     exe.add_node(node)
+#     exe.spin()
+#     rclpy.shutdown()
+#     sys.exit(0)
 
-def main():
-    rclpy.init()
-    node = Supervised_collect_data()
-    pros = threading.Thread(target=spin_pros, args=(node,))
-    pros.start()  
+# def main():
+#     rclpy.init()
+#     node = supervised_collect_data_node()
+#     spin_pros(node) 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     
-    main()
+#     main()
