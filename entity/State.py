@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from entity.Coordinate import Coordinate 
-from entity.Velocity import Velocity 
-from entity.WheelOrientation import WheelOrientation
-from entity.WheelAngularVel import WheelAngularVel
+from Supervised.entity.Coordinate import Coordinate 
+from Supervised.entity.Velocity import Velocity 
+from Supervised.entity.WheelOrientation import WheelOrientation
+from Supervised.entity.WheelAngularVel import WheelAngularVel
 import json
 import math
 import numpy as np

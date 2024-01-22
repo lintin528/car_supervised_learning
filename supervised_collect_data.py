@@ -1,7 +1,7 @@
 import numpy as np
 from datetime import datetime
 import os
-from entity.State import State
+from Supervised.entity.State import State
 from rclpy.node import Node
 from std_msgs.msg import String
 import csv
@@ -50,19 +50,3 @@ class supervised_collect_data_node(Node):
                 csv_writer.writerow([item])
         self.tokens = list()
         print("finish saving !")        
-
-# def spin_pros(node):
-#     exe = rclpy.executors.SingleThreadedExecutor()
-#     exe.add_node(node)
-#     exe.spin()
-#     rclpy.shutdown()
-#     sys.exit(0)
-
-# def main():
-#     rclpy.init()
-#     node = supervised_collect_data_node()
-#     spin_pros(node) 
-
-# if __name__ == '__main__':
-    
-#     main()

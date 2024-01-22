@@ -5,7 +5,7 @@ from std_msgs.msg import Float32MultiArray
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from entity.State import State
+from Supervised.entity.State import State
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -35,8 +35,6 @@ class supervised_inference_node(Node):
         self.lstm = nn.LSTM(self.input_size, self.hidden_size, self.num_layers, batch_first=True).to(device)
         self.fc1 = nn.Linear(self.hidden_size, 4).to(device) 
 
-        # self.token = []
-
         self.model_path = './Supervised_Model/best_model.pth'
         self.model_weights = torch.load(self.model_path, map_location=device)
         self.lstm.load_state_dict(self.model_weights)
@@ -54,7 +52,7 @@ class supervised_inference_node(Node):
         token = list()
         self.state_detect, token = self.state.get_wanted_features()
         if self.state_detect == 1:
-            #  收到資料後將他丟入LSTM
+
             self.lstm.to(device).eval()
             with torch.inference_mode():
                 test_input = [eval(token)]
@@ -82,29 +80,3 @@ class supervised_inference_node(Node):
         Unitystate = msg.data
         self.state.update(Unitystate)
         self.unity_data_collect(msg.data)
-
-
-# def spin_pros(node):
-#     exe = rclpy.executors.SingleThreadedExecutor()
-#     exe.add_node(node)
-#     exe.spin()
-#     rclpy.shutdown()
-#     sys.exit(0)
-
-# def print_usage():
-#     print("modes:")
-#     print(" 0 -- supervised learning data colletion.")
-#     print(" 1 -- supervised learning inference.")
-#     print(" 2 -- rule-based control.")
-#     print(" 3 -- reinforced learning inference.")
-
-# def main(mode):
-#     if mode == "1":
-#         rclpy.init()
-#         node = supervised_inference_node()
-#         spin_pros(node) 
-
-# if __name__ == '__main__':
-#     print_usage()
-#     mode = input("Enter mode: ")
-#     main(mode)
