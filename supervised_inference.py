@@ -37,7 +37,7 @@ class supervised_inference_node(Node):
 
         # self.token = []
 
-        self.model_path = './Model/best_model.pth'
+        self.model_path = './Supervised_Model/best_model.pth'
         self.model_weights = torch.load(self.model_path, map_location=device)
         self.lstm.load_state_dict(self.model_weights)
 

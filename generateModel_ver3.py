@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
-csv_directory = "./output"
+csv_directory = "./dataset"
 csv_files = [f for f in os.listdir(csv_directory) if f.endswith('.csv')]
 csv_files_test_n = round(len(csv_files) * 0.2)
 
@@ -132,12 +132,12 @@ for epoch in range(num_epochs):
             lowest_loss = avg_test_loss
             best_model = lstm.state_dict()
 
-model_directory = './Model/'
+model_directory = './Supervised_Model/'
 
 if not os.path.exists(model_directory):
     os.makedirs(model_directory)
 
-torch.save(best_model, './Model/best_model.pth')
+torch.save(best_model, './Supervised_Model/best_model.pth')
 
 
 

@@ -38,7 +38,7 @@ class supervised_collect_data_node(Node):
     def callback_from_Unity_stop_flag(self, msg):
         print("saving data....")
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        csv_directory = os.path.join('.', 'output')
+        csv_directory = os.path.join('.', 'dataset')
         csv_file_path = os.path.join(csv_directory, f'lstm_training_{timestamp}.csv')
 
         os.makedirs(csv_directory, exist_ok=True)
