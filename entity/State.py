@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from entity.ROS2Point import ROS2Point 
+from entity.Coordinate import Coordinate 
+from entity.Velocity import Velocity 
 from entity.WheelOrientation import WheelOrientation
 from entity.WheelAngularVel import WheelAngularVel
 import json
@@ -7,9 +8,9 @@ import math
 import numpy as np
 
 class StateType(BaseModel):
-    final_target_pos: ROS2Point
-    car_pos: ROS2Point
-    car_vel: ROS2Point  # in ROS2 coordinate system
+    final_target_pos: Coordinate
+    car_pos: Coordinate
+    car_vel: Velocity  # in ROS2 coordinate system
     car_orientation: float = 0  # radians, around ROS2 z axis, counter-clockwise: 0 - 359
     car_quaternion: list
     wheel_orientation: WheelOrientation  # around car z axis, counter-clockwise: +, clockwise: -, r/s
@@ -24,18 +25,22 @@ class StateType(BaseModel):
 
 class State:
     def __init__(self) -> None:
-        self.prev_car_state_training = StateType(final_target_pos=ROS2Point(x=0.0, y=0.0, z=0.0),
-                         car_pos=ROS2Point(x=0.0, y=0.0, z=0.0),
-                         car_vel=ROS2Point(x=0.0, y=0.0, z=0.0),
-                         car_orientation=0.0,
-                         car_quaternion=[],
-                         wheel_orientation=WheelOrientation(left_front=0.0, right_front=0.0),
-                         car_angular_vel=0.0,
-                         wheel_angular_vel=WheelAngularVel(left_back=0.0, left_front=0.0, right_back=0.0,
-                                                                  right_front=0.0),
-                         min_lidar=[],
-                         min_lidar_direciton=[0.0],
-                         lidar_no_element_detect=0)
+        self.prev_car_state_training = StateType(
+                                                final_target_pos=Coordinate(x=0.0, y=0.0, z=0.0),
+                                                car_pos=Coordinate(x=0.0, y=0.0, z=0.0),
+                                                car_vel=Velocity(x=0.0, y=0.0, z=0.0),
+                                                car_orientation=0.0,
+                                                car_quaternion=[],
+                                                wheel_orientation=WheelOrientation(left_front=0.0, right_front=0.0),
+                                                car_angular_vel=0.0,
+                                                wheel_angular_vel=WheelAngularVel(left_back=0.0, 
+                                                                                  left_front=0.0, 
+                                                                                  right_back=0.0,
+                                                                                  right_front=0.0),
+                                                min_lidar=[],
+                                                min_lidar_direciton=[0.0],
+                                                lidar_no_element_detect=0
+                                                )
 
         self.current_car_state_training = self.prev_car_state_training
     
@@ -148,35 +153,31 @@ class State:
         lidar_no_element_detect = int(bool(lidar_data))
 
         self.prev_car_state_training = self.current_car_state_training
-
         self.current_car_state_training = StateType(
-            final_target_pos=ROS2Point(x=data['ROS2TargetPosition'][0],
+            final_target_pos=Coordinate(x=data['ROS2TargetPosition'][0],
                                        y=data['ROS2TargetPosition'][1],
-                                       z=0.0),  # data[5]
-            car_pos=ROS2Point(x=data['ROS2CarPosition'][0],
+                                       z=0.0),
+            car_pos=Coordinate(x=data['ROS2CarPosition'][0],
                               y=data['ROS2CarPosition'][1],
-                              z=data['ROS2CarPosition'][1]),  # data[2]
+                              z=data['ROS2CarPosition'][1]),
                               
-            car_vel=ROS2Point(x=data['ROS2CarVelocity'][0],
+            car_vel=Velocity(x=data['ROS2CarVelocity'][0],
                               y=data['ROS2CarVelocity'][1],
-                              z=0.0),  # data[20]
+                              z=0.0),
             car_orientation=car_orientation,
             car_quaternion=car_quaternion,
             wheel_orientation=WheelOrientation(left_front=self.__radToPositiveRad(wheel_left_front_yaw_z), \
                                                right_front=self.__radToPositiveRad(wheel_right_front_yaw_z)),
 
-            car_angular_vel=data['ROS2CarAugularVelocity'][2],  # data[21 22]
-            # data[28]
-            wheel_angular_vel=WheelAngularVel(left_back=data['ROS2WheelAngularVelocityLeftBack'][1],  # data[30]
-                                              left_front=data['ROS2WheelAngularVelocityLeftFront'][1],  # data[31][33]
-                                              right_back=data['ROS2WheelAngularVelocityRightBack'][1],  # data[34 36]
+            car_angular_vel=data['ROS2CarAugularVelocity'][2],
+            wheel_angular_vel=WheelAngularVel(left_back=data['ROS2WheelAngularVelocityLeftBack'][1],
+                                              left_front=data['ROS2WheelAngularVelocityLeftFront'][1],
+                                              right_back=data['ROS2WheelAngularVelocityRightBack'][1],
                                               right_front=data['ROS2WheelAngularVelocityRightFront'][1]
-                                              # data[37 39] data[40 41 42 43] ROS2WheelQuaternionLeftBack
                                               ),
-            min_lidar=data['ROS2Range'],  # 57 58 59
+            min_lidar=data['ROS2Range'],
             min_lidar_direction=data["ROS2RangePosition"],
             lidar_no_element_detect=lidar_no_element_detect,
-
         )
 
     def get_wanted_features(self):
@@ -196,8 +197,8 @@ class State:
 
         car_quaternion = self.round_to_decimal_places(self.current_car_state_training.car_quaternion[2:4])
         angle_diff = self.calculate_angle_point(car_quaternion[0], car_quaternion[1], 
-                                           self.current_car_state_training.car_pos, 
-                                           self.current_car_state_training.final_target_pos)
+                                                self.current_car_state_training.car_pos, 
+                                                self.current_car_state_training.final_target_pos)
         
         angle_diff = self.round_to_decimal_places([angle_diff])
         lidar_18 = []
