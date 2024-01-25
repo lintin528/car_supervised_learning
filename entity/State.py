@@ -190,6 +190,7 @@ class State:
             pattern = [0, 0, 1, 0]
         else :
             pattern = [0, 0, 0, 1]
+            
         wheel_angular_vel_list = [self.current_car_state_training.wheel_angular_vel.left_back, self.current_car_state_training.wheel_angular_vel.right_back]
         car_target_distance = math.sqrt((self.current_car_state_training.car_pos.x - self.current_car_state_training.final_target_pos.x)**2 + 
                                         (self.current_car_state_training.car_pos.y - self.current_car_state_training.final_target_pos.y)**2)
@@ -210,4 +211,5 @@ class State:
                 minimum = 999.0
         lidar_18 = self.round_to_decimal_places(lidar_18)
         token = str(car_target_distance + angle_diff + lidar_18 + wheel_angular_vel_list + pattern)
+        print(f"front  lidar ranges {lidar_18[8]}")
         return self.current_car_state_training.lidar_no_element_detect, token

@@ -28,16 +28,20 @@ class supervised_inference_node(Node):
             10
         )
 
-        self.input_size = 22 # input dimension 15
-        self.hidden_size = 64
-        self.num_layers = 1
-        self.fc_hidden_size = 128
+        self.input_size = 20 # input dimension 15
+        self.hidden_size = 128
+        self.num_layers = 3
+
         self.lstm = nn.LSTM(self.input_size, self.hidden_size, self.num_layers, batch_first=True).to(device)
-        self.fc1 = nn.Linear(self.hidden_size, 4).to(device) 
+        self.linear = nn.Linear(self.hidden_size, 4).to(device) 
 
         self.model_path = './Supervised_Model/best_model.pth'
         self.model_weights = torch.load(self.model_path, map_location=device)
         self.lstm.load_state_dict(self.model_weights)
+
+        self.linear_path = './Supervised_Model/best_model_linear.pth'
+        self.linear_weights = torch.load(self.linear_path, map_location=device)
+        self.linear.load_state_dict(self.linear_weights)
 
         self.lstm.eval()
         
@@ -57,14 +61,14 @@ class supervised_inference_node(Node):
             with torch.inference_mode():
                 test_input = [eval(token)]
                 test_input_tensor = torch.tensor(test_input, dtype=torch.float32)
-                test_input_tensor = test_input_tensor[:, :-4]
+                test_input_tensor = test_input_tensor[:, :-6]
                 test_input_tensor = test_input_tensor.unsqueeze(0).to(device)
                 h0 = torch.zeros(self.num_layers, test_input_tensor.size(0), self.hidden_size).to(device)
                 c0 = torch.zeros(self.num_layers, test_input_tensor.size(0), self.hidden_size).to(device)
                 lstm_output, _ = self.lstm(test_input_tensor, (h0, c0))
 
                 lstm_output_last = lstm_output[:, -1, :]
-                predicted_output = self.fc1(lstm_output_last)
+                predicted_output = self.linear(lstm_output_last)
 
                 probabilities = F.softmax(predicted_output, dim=-1)
                 print("Softmax probabilities:", probabilities)

@@ -9,6 +9,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.init as init
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -17,6 +18,7 @@ csv_directory = "./dataset"
 csv_files = [f for f in os.listdir(csv_directory) if f.endswith('.csv')]
 csv_files_test_n = round(len(csv_files) * 0.2)
 
+print(f"num of files = {len(csv_files)} ")
 train_data = []
 test_data = []
 
@@ -30,10 +32,6 @@ for index, csv_file in enumerate(csv_files):
     for i in df.values.tolist():
         csv_data_collect.append(i[0])    
 
-    #for test
-    train_data.append(csv_data_collect)
-    test_data.append(csv_data_collect)
-
     if index > csv_files_test_n:
         train_data.append(csv_data_collect)
     else:
@@ -43,14 +41,15 @@ for index, csv_file in enumerate(csv_files):
 
 data_tensor = torch.tensor(train_data[0], dtype=torch.float32).to(device)
 
-X = data_tensor[:, :-4].unsqueeze(1)
+X = data_tensor[:, :-6].unsqueeze(1)
 Y = data_tensor[:, -4:]  
 
 input_size = X.size(-1)  
 print(input_size)
-hidden_size = 64  
-num_layers = 1  
-lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True).to(device)
+
+hidden_size = 128  
+num_layers = 3
+lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.2).to(device)
 linear = nn.Linear(hidden_size, Y.size(-1)).to(device)  
 
 lstm = lstm.to(device)
@@ -63,7 +62,7 @@ best_model = None
 lowest_loss = float('inf')
 
 batch_size = 64
-num_epochs = 20
+num_epochs = 30
 
 training_losses = []
 testing_losses = []
@@ -77,7 +76,7 @@ for epoch in range(num_epochs):
 
         data_tensor = torch.tensor(data, dtype=torch.float32).to(device)
 
-        X = data_tensor[:, :-4].unsqueeze(1) 
+        X = data_tensor[:, :-6].unsqueeze(1) 
         Y = data_tensor[:, -4:]  
 
         dataset = TensorDataset(X, Y)
@@ -91,16 +90,14 @@ for epoch in range(num_epochs):
             # print(lstm_output)
             # print(lstm_output[0].shape)
             lstm_output_last = lstm_output[:, -1, :]
-            
             predicted_output = linear(lstm_output_last)
             loss = criterion(predicted_output, target_seq)
             total_loss += loss.item()
-            
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-    avg_loss = total_loss / len(dataloader)
+    avg_loss = total_loss / len(train_data)
     training_losses.append(avg_loss)
     print(f"[Training] : Epoch {epoch+1}/{num_epochs}, Average Loss: {avg_loss:.4f}")
 
@@ -109,7 +106,7 @@ for epoch in range(num_epochs):
     with torch.inference_mode():
         for data in test_data:
             data_tensor = torch.tensor(data, dtype=torch.float32).to(device)
-            X = data_tensor[:, :-4].unsqueeze(1)
+            X = data_tensor[:, :-6].unsqueeze(1)
             Y = data_tensor[:, -4:]
             test_dataset = TensorDataset(X, Y)
             test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, drop_last=True)
@@ -124,7 +121,7 @@ for epoch in range(num_epochs):
                 
                 test_loss = criterion(predicted_output, target_seq)
                 total_test_loss += test_loss.item()
-        avg_test_loss = total_test_loss / len(test_dataloader)
+        avg_test_loss = total_test_loss / len(test_data)
         testing_losses.append(avg_test_loss)
         print(f"[Testing] : Epoch {epoch+1}/{num_epochs}, Average Test Loss: {avg_test_loss:.4f}")
 
@@ -137,8 +134,8 @@ model_directory = './Supervised_Model/'
 if not os.path.exists(model_directory):
     os.makedirs(model_directory)
 
-torch.save(best_model, './Supervised_Model/best_model.pth')
-
+torch.save(lstm.state_dict(), './Supervised_Model/best_model.pth')
+torch.save(linear.state_dict(), './Supervised_Model/best_model_linear.pth')
 
 
 
