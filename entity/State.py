@@ -211,5 +211,5 @@ class State:
                 minimum = 999.0
         lidar_18 = self.round_to_decimal_places(lidar_18)
         token = str(car_target_distance + angle_diff + lidar_18 + wheel_angular_vel_list + pattern)
-        print(f"front  lidar ranges {lidar_18[8]}")
+        print(f"angle_diff : {angle_diff}")
         return self.current_car_state_training.lidar_no_element_detect, token
